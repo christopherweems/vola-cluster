@@ -18,6 +18,7 @@ import NIOWebSocket
 import NIOFoundationCompat
 
 @available(iOS 16.0, *)
+@available(watchOS 9.0, *)
 public class NIOInvocationDecoder: DistributedTargetInvocationDecoder {
     public typealias SerializationRequirement = any Codable
 

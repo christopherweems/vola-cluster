@@ -9,7 +9,7 @@ import Distributed
 import Foundation
 import NIO
 import NIOConcurrencyHelpers
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || os(watchOS)
 import NIOTransportServices
 #endif
 import NIOCore
@@ -21,6 +21,7 @@ import NIOFoundationCompat
 // - MARK: Client-side networking stack
 
 @available(iOS 16.0, *)
+@available(watchOS 9.0, *)
 extension WebSocketActorSystem {
     func startClient(host: String, port: Int) throws -> Channel {
         let bootstrap = NIOTSConnectionBootstrap(group: group)

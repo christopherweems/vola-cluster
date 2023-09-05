@@ -4,8 +4,9 @@ import PackageDescription
 let package = Package(
     name: "vola-cluster",
     platforms: [
-        .macOS(.v13),
+        .macOS(.v14),
         .iOS(.v16),
+        .watchOS(.v9),
         
     ],
     products: [
