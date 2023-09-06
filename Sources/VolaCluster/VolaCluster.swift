@@ -31,11 +31,11 @@ public struct VolaCluster {
         case productServer = 9101
         case productServerInventoryServerClient = 9102 // inventory server is the client
         case productServerMobileClient = 9103
-
+        
     }
-
-    public let name = "express.oomph.piggly-squiggly"
-
+    
+    public let name = "lol.vola.squiggly"
+    
     private let role: InstanceRole
 
     public let productServer: (device: WellKnownDevice, port: Port)
