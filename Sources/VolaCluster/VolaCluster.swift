@@ -1,5 +1,10 @@
 import DistributedCluster
 
+extension Cluster {
+    public typealias Vola = VolaCluster
+    
+}
+
 public struct VolaCluster {
     public enum WellKnownDevice: String, CaseIterable {
         #if DEBUG
