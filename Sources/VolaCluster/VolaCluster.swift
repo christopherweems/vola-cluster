@@ -7,16 +7,14 @@ extension Cluster {
 
 public struct VolaCluster {
     public enum WellKnownDevice: String, CaseIterable {
-        #if DEBUG
+        // debug
         case lilBish = "100.65.195.83"
         case lilBook = "100.116.244.41"
         case lilPhone = "100.96.40.91"
-
-        #else
+        
+        // production
         case doc = "100.103.224.86"
-
-        #endif
-
+        
     }
 
     public enum InstanceRole {
