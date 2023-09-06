@@ -21,7 +21,7 @@ import NIOFoundationCompat
 // - MARK: Server-side networking stack
 
 extension WebSocketActorSystem {
-    func startServer(host: String, port: Int) throws -> any Channel {
+    internal func startServer(host: String, port: Int) throws -> any Channel {
         // Upgrader performs upgrade from HTTP to WS connection
         let upgrader = NIOWebSocketServerUpgrader(
             shouldUpgrade: { (channel: any Channel, head: HTTPRequestHead) in
@@ -66,5 +66,5 @@ extension WebSocketActorSystem {
 
         return channel
     }
+    
 }
-

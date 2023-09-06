@@ -1,86 +1,113 @@
 import DistributedCluster
 
-extension Cluster {
-    struct Vola {
-        enum WellKnownDevice: String, CaseIterable {
-            #if DEBUG
-            case lilBish = "100.65.195.83"
-            case lilBook = "100.116.244.41"
-            
-            #else
-            case doc = "100.103.224.86"
-            
-            #endif
-            
-        }
-        
-        enum Port: Int, CaseIterable {
-            case productServer = 9101
-            case inventoryServer = 9102
-            case productServerClient = 9103
-            case inventoryServerClient = 9104
-            
-        }
-        
-        private let _currentDevice: WellKnownDevice
-        let productServer: (device: WellKnownDevice, port: Port)
-        let inventoryServer: (device: WellKnownDevice, port: Port)
-        
-        func endpoint(for endpointKeyPath: KeyPath<Cluster.Vola, (device: WellKnownDevice, port: Port)>) -> Cluster.Endpoint {
-            let (device, port) = self[keyPath: endpointKeyPath]
-            return .init(host: device.rawValue, port: port.rawValue)
-        }
-        
-        private var currentDevice: WellKnownDevice {
-            @storageRestrictions(initializes: productServer, inventoryServer, _currentDevice)
-            init {
-                self._currentDevice = newValue
-                
-                switch newValue {
-                case .lilBook:
-                    #if BUILD_LIL_BISH_SERVER
-                    productServer = (.lilBish, .productServer)
-                    inventoryServer = (.lilBish, .inventoryServer)
-                    #else
-                    productServer = (.lilBook, .productServer)
-                    inventoryServer = (.lilBook, .inventoryServer)
-                    #endif
-                    
-                case .lilBish:
-                    productServer = (.lilBook, .productServer)
-                    inventoryServer = (.lilBook, .inventoryServer)
-                    
-                #if !DEBUG
-                case .doc:
-                    productServer = (.doc, .productServer)
-                    inventoryServer = (.doc, .inventoryServer)
-                    
-                #endif
-                }
-            }
-            get {
-                _currentDevice
-            }
-        }
-        
-        func connectToPeers<ActorSystem>(on actorSystem: ActorSystem) async throws {
-            #if BUILD_WEB_SOCKET_ACTOR_SYSTEM
-            // as you were
-            return
-            
-            #elseif BUILD_DISTRIBUTED_CLUSTER_SYSTEM
-            // cluster.
-            
-            #endif
-        }
-        
-        init(currentDevice: WellKnownDevice) async {
-            self.currentDevice = currentDevice
-            
-        }
-        
-        
+public struct VolaCluster {
+    public enum WellKnownDevice: String, CaseIterable {
+        #if DEBUG
+        case lilBish = "100.65.195.83"
+        case lilBook = "100.116.244.41"
+        case lilPhone = "100.96.40.91"
+
+        #else
+        case doc = "100.103.224.86"
+
+        #endif
+
     }
-    
-    
+
+    public enum InstanceRole {
+        case productServer
+        case inventoryServer
+        case productClient
+        case inventoryClient
+
+    }
+
+    public enum Port: Int, CaseIterable {
+        case productServer = 9101
+        case productServerInventoryServerClient = 9102 // inventory server is the client
+        case productServerMobileClient = 9103
+
+    }
+
+    public let name = "express.oomph.piggly-squiggly"
+
+    private let role: InstanceRole
+
+    public let productServer: (device: WellKnownDevice, port: Port)
+
+    private let currentDevice: WellKnownDevice
+
+    public func connectToPeers(on clusterSystem: ClusterSystem) async throws {
+        // connect to the peers this node depends on base on its role
+        switch role {
+        case .inventoryServer, .inventoryClient, .productClient:
+            let productServerEndpoint = self.endpoint(for: \.productServer)
+
+            clusterSystem.cluster.join(endpoint: productServerEndpoint)
+            try await clusterSystem.cluster.joined(endpoint: productServerEndpoint, within: .seconds(8))
+
+        default:
+            break
+        }
+
+    }
+
+    public init(currentDevice: WellKnownDevice, role: InstanceRole) {
+        self.currentDevice = currentDevice
+        self.role = role
+
+        #if DEBUG
+        #if BUILD_LIL_BISH_SERVER
+        productServer = (.lilBish, .productServer)
+        #else
+        productServer = (.lilBook, .productServer)
+        #endif
+
+        #elseif !DEBUG
+        productServer = (.doc, .productServer)
+        #endif
+
+    }
+
+}
+
+
+extension VolaCluster {
+    public func endpoint(for endpointKeyPath: KeyPath<VolaCluster, (device: WellKnownDevice, port: Port)>) -> Cluster.Endpoint {
+        let (device, port) = self[keyPath: endpointKeyPath]
+        return .init(host: device.rawValue, port: port.rawValue)
+    }
+
+    public func endpoint(forConnectingTo endpointKeyPath: KeyPath<VolaCluster, (device: WellKnownDevice, port: Port)>) -> Cluster.Endpoint {
+        let port: Port
+
+        switch(currentDevice, role, endpointKeyPath) {
+        case (_, .inventoryServer, \.productServer),
+            (_, .inventoryClient, \.productServer):
+            port = .productServerInventoryServerClient
+
+        case (_, .productClient, \.productServer):
+            port = .productServerMobileClient
+
+        default:
+            fatalError()
+        }
+
+
+        return .init(host: currentDevice.rawValue, port: port.rawValue)
+    }
+
+}
+
+
+// MARK: - Helper Extensions
+
+extension ClusterSystem {
+    public convenience init(
+        _ cluster: VolaCluster,
+        configuredWith configureSettings: (inout ClusterSystemSettings) -> Void = { _ in () }
+    ) async {
+        await self.init(cluster.name, configuredWith: configureSettings)
+    }
+
 }

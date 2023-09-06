@@ -16,20 +16,22 @@ import NIOWebSocket
 import Foundation
 
 public struct WebSocketReplyEnvelope: Sendable, Codable {
-    let callID: WebSocketActorSystem.CallID
-    let sender: WebSocketActorSystem.ActorID?
-    let value: Data
+    internal let callID: WebSocketActorSystem.CallID
+    internal let sender: WebSocketActorSystem.ActorID?
+    internal let value: Data
+    
 }
 
 // ===== --------------------------------------------------------------------------------------------------------------
 // MARK: Client-side handlers
 
-struct ConnectTo {
-    let host: String
-    let port: Int
+internal struct ConnectTo {
+    internal let host: String
+    internal let port: Int
+    
 }
 
-final class HTTPInitialRequestHandler: ChannelInboundHandler, RemovableChannelHandler {
+internal final class HTTPInitialRequestHandler: ChannelInboundHandler, RemovableChannelHandler {
     public typealias InboundIn = HTTPClientResponsePart
     public typealias OutboundOut = HTTPClientRequestPart
 
@@ -37,6 +39,7 @@ final class HTTPInitialRequestHandler: ChannelInboundHandler, RemovableChannelHa
 
     public init(target: ConnectTo) {
         self.target = target
+        
     }
     
     public func channelActive(context: ChannelHandlerContext) {
@@ -86,15 +89,18 @@ final class HTTPInitialRequestHandler: ChannelInboundHandler, RemovableChannelHa
         // we just pass nil as promise to reduce allocations.
         context.close(promise: nil)
     }
+    
 }
 
-final class WebSocketMessageOutboundHandler: ChannelOutboundHandler {
-    typealias OutboundIn = WebSocketWireEnvelope
-    typealias OutboundOut = WebSocketFrame
+internal final class WebSocketMessageOutboundHandler: ChannelOutboundHandler {
+    internal typealias OutboundIn = WebSocketWireEnvelope
+    internal typealias OutboundOut = WebSocketFrame
     
-    let actorSystem: WebSocketActorSystem
-    init(actorSystem: WebSocketActorSystem) {
+    internal let actorSystem: WebSocketActorSystem
+    
+    internal init(actorSystem: WebSocketActorSystem) {
         self.actorSystem = actorSystem
+        
     }
     
     public func handlerRemoved(context: ChannelHandlerContext) {
@@ -104,7 +110,7 @@ final class WebSocketMessageOutboundHandler: ChannelOutboundHandler {
         print("WebSocket handler removed.")
     }
     
-    func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
+    internal func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         log("write", "unwrap \(Self.OutboundIn.self)")
         let envelope: WebSocketWireEnvelope = self.unwrapOutboundIn(data)
 
@@ -139,23 +145,23 @@ final class WebSocketMessageOutboundHandler: ChannelOutboundHandler {
 // ===== --------------------------------------------------------------------------------------------------------------
 // MARK: Server-side handlers
 
-final class HTTPHandler: ChannelInboundHandler, RemovableChannelHandler {
-    typealias InboundIn = HTTPServerRequestPart
-    typealias OutboundOut = HTTPServerResponsePart
+internal final class HTTPHandler: ChannelInboundHandler, RemovableChannelHandler {
+    internal typealias InboundIn = HTTPServerRequestPart
+    internal typealias OutboundOut = HTTPServerResponsePart
     
     private var responseBody: ByteBuffer!
     
-    func handlerAdded(context: ChannelHandlerContext) {
+    internal func handlerAdded(context: ChannelHandlerContext) {
         self.responseBody = context.channel.allocator.buffer(string: """
-        <html><head></head><body><h2>vola-cluster (run id: 618)</h2></body></html>
+        <html><head></head><body><h2>oomph-cluster (run id: 618)</h2></body></html>
         """)
     }
     
-    func handlerRemoved(context: ChannelHandlerContext) {
+    internal func handlerRemoved(context: ChannelHandlerContext) {
         self.responseBody = nil
     }
     
-    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+    internal func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         log("write", "unwrap \(Self.InboundIn.self)")
         let reqPart = self.unwrapInboundIn(data)
         
@@ -201,14 +207,14 @@ final class HTTPHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 }
 
-final class WebSocketActorMessageInboundHandler: ChannelInboundHandler {
-    typealias InboundIn = WebSocketFrame
-    typealias OutboundOut = WebSocketWireEnvelope
+internal final class WebSocketActorMessageInboundHandler: ChannelInboundHandler {
+    internal typealias InboundIn = WebSocketFrame
+    internal typealias OutboundOut = WebSocketWireEnvelope
     
     private var awaitingClose: Bool = false
     
     private let actorSystem: WebSocketActorSystem
-    init(actorSystem: WebSocketActorSystem) {
+    internal init(actorSystem: WebSocketActorSystem) {
         self.actorSystem = actorSystem
     }
     

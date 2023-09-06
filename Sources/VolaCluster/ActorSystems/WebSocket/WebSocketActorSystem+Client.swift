@@ -23,7 +23,7 @@ import NIOFoundationCompat
 @available(iOS 16.0, *)
 @available(watchOS 9.0, *)
 extension WebSocketActorSystem {
-    func startClient(host: String, port: Int) throws -> Channel {
+    internal func startClient(host: String, port: Int) throws -> Channel {
         let bootstrap = NIOTSConnectionBootstrap(group: group)
             // Enable SO_REUSEADDR.
                 .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
@@ -56,4 +56,5 @@ extension WebSocketActorSystem {
 
         return channel
     }
+    
 }

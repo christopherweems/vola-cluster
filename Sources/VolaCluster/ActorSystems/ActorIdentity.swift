@@ -7,7 +7,7 @@ Used as `ActorID` by all distributed actors in this sample app. It is used to un
 
 import Foundation
 
-public struct ActorIdentity: Hashable, Sendable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct WebSocketActorIdentity: Hashable, Sendable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
   public let `protocol`: String?
   public let host: String?
   public let port: Int?
