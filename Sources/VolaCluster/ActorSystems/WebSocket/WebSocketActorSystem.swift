@@ -135,11 +135,14 @@ public final class WebSocketActorSystem:
         switch mode {
         case .clientFor(let host, let port):
             self.clientChannel = try startClient(host: host, port: port)
+            
         case .serverOnly(let host, let port):
             self.serverChannel = try startServer(host: host, port: port)
+            
         }
         
         log("websocket", "\(Self.self) initialized in mode: \(mode)")
+        
     }
     
     public func syncShutdownGracefully() {
@@ -292,6 +295,7 @@ public final class WebSocketActorSystem:
     public func makeInvocationEncoder() -> InvocationEncoder {
         .init()
     }
+    
 }
 
 extension WebSocketActorSystem {
@@ -346,29 +350,41 @@ extension WebSocketActorSystem {
                 case .call(let remoteCallEnvelope):
                     // log("receive-decode-deliver", "Decode remoteCall...")
                     self.receiveInboundCall(envelope: remoteCallEnvelope, on: channel)
+                    
                 case .reply(let replyEnvelope):
                     self.receiveInboundReply(envelope: replyEnvelope, on: channel)
+                    
                 case .none, .connectionClose:
                     log("receive-decode-deliver", "[error] Failed decoding: \(data); decoded empty")
+                    
                 }
+                
             } catch {
                 log("receive-decode-deliver", "[error] Failed decoding: \(data), error: \(error)")
+                
             }
+            
             log("decode-deliver", "here...")
+            
         }
     
     internal func receiveInboundCall(envelope: RemoteWebSocketCallEnvelope, on channel: any Channel) {
         log("receive-inbound", "Envelope: \(envelope)")
+        
         Task {
             log("receive-inbound", "Resolve any: \(envelope.recipient)")
+            
             guard let anyRecipient = resolveAny(id: envelope.recipient, resolveReceptionist: true) else {
                 log("deadLetter", "[warn] \(#function) failed to resolve \(envelope.recipient)")
                 return
             }
+            
             log("receive-inbound", "Recipient: \(anyRecipient)")
+            
             let target = RemoteCallTarget(envelope.invocationTarget)
             log("receive-inbound", "Target: \(target)")
             log("receive-inbound", "Target.identifier: \(target.identifier)")
+            
             let handler = ResultHandler(actorSystem: self, callID: envelope.callID, system: self, channel: channel)
             log("receive-inbound", "Handler: \(anyRecipient)")
             
@@ -388,11 +404,14 @@ extension WebSocketActorSystem {
                 // SE-352 Implicitly Opened Existentials:
                 // https://github.com/apple/swift-evolution/blob/main/proposals/0352-implicit-open-existentials.md
                 try await _openExistential(anyRecipient, do: doExecuteDistributedTarget)
+                
             } catch {
                 log("inbound", "[error] failed to executeDistributedTarget [\(target)] on [\(anyRecipient)], error: \(error)")
                 try! await handler.onThrow(error: error)
             }
+            
         }
+        
     }
     
     internal func receiveInboundReply(envelope: WebSocketReplyEnvelope, on channel: any Channel) {
@@ -467,6 +486,7 @@ extension WebSocketActorSystem {
         log("remote-call-void", "channel: \(channel)")
         
         log("remote-call-void", "Prepare [\(target)] call...")
+        
         _ = try await withCallIDContinuation(recipient: actor) { callID in
             let callEnvelope = RemoteWebSocketCallEnvelope(
                 callID: callID,
@@ -475,10 +495,12 @@ extension WebSocketActorSystem {
                 genericSubs: invocation.genericSubs,
                 args: invocation.argumentData
             )
+            
             let wireEnvelope = WebSocketWireEnvelope.call(callEnvelope)
             
             log("remote-call-void", "Write envelope: \(wireEnvelope)")
             channel.writeAndFlush(wireEnvelope, promise: nil)
+            
         }
         
         log("remote-call-void", "COMPLETED CALL: \(target)")
