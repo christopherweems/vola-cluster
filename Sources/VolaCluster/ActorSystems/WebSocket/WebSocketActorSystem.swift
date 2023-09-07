@@ -121,7 +121,11 @@ public final class WebSocketActorSystem:
         self.group = { () -> EventLoopGroup in
             switch mode {
             case .clientFor:
+                #if os(iOS) || os(macOS) || os(watchOS)
                 return NIOTSEventLoopGroup()
+                #else
+                fatalError()
+                #endif
             case .serverOnly:
                 return MultiThreadedEventLoopGroup(numberOfThreads: 1)
             }
