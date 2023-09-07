@@ -34,9 +34,9 @@ internal struct ConnectTo {
 internal final class HTTPInitialRequestHandler: ChannelInboundHandler, RemovableChannelHandler {
     public typealias InboundIn = HTTPClientResponsePart
     public typealias OutboundOut = HTTPClientRequestPart
-
+    
     public let target: ConnectTo
-
+    
     public init(target: ConnectTo) {
         self.target = target
         
@@ -113,26 +113,26 @@ internal final class WebSocketMessageOutboundHandler: ChannelOutboundHandler {
     internal func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         log("write", "unwrap \(Self.OutboundIn.self)")
         let envelope: WebSocketWireEnvelope = self.unwrapOutboundIn(data)
-
+        
         switch envelope {
         case .connectionClose:
             var data = context.channel.allocator.buffer(capacity: 2)
             data.write(webSocketErrorCode: .protocolError)
             let frame = WebSocketFrame(fin: true,
-                opcode: .connectionClose,
-                data: data)
+                                       opcode: .connectionClose,
+                                       data: data)
             context.writeAndFlush(self.wrapOutboundOut(frame)).whenComplete { (_: Result<Void, Error>) in
                 context.close(promise: nil)
             }
         case .reply, .call:
             let encoder = JSONEncoder()
             encoder.userInfo[.actorSystemKey] = actorSystem
-
+            
             do {
                 var data = ByteBuffer()
                 try data.writeJSONEncodable(envelope, encoder: encoder)
                 log("outbound-call", "Write: \(envelope), to: \(context)")
-
+                
                 let frame = WebSocketFrame(fin: true, opcode: .text, data: data)
                 context.writeAndFlush(self.wrapOutboundOut(frame), promise: nil)
             } catch {
@@ -220,7 +220,7 @@ internal final class WebSocketActorMessageInboundHandler: ChannelInboundHandler 
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let frame = self.unwrapInboundIn(data)
-
+        
         switch frame.opcode {
         case .connectionClose:
             // Close the connection.
@@ -234,9 +234,9 @@ internal final class WebSocketActorMessageInboundHandler: ChannelInboundHandler 
             var data = frame.unmaskedData
             let text = data.getString(at: 0, length: data.readableBytes) ?? ""
             log("inbound-call", "Received: \(text), from: \(context)")
-
+            
             actorSystem.decodeAndDeliver(data: &data, from: context.remoteAddress, on: context.channel)
-
+            
         case .binary, .continuation, .pong, .ping:
             // We ignore these frames.
             break
@@ -271,11 +271,11 @@ internal final class WebSocketActorMessageInboundHandler: ChannelInboundHandler 
         // shutting down the write side of the connection.
         var data = context.channel.allocator.buffer(capacity: 2)
         data.write(webSocketErrorCode: .protocolError)
-
+        
         context.write(self.wrapOutboundOut(.connectionClose)).whenComplete { (_: Result<Void, Error>) in
             context.close(mode: .output, promise: nil)
         }
-
+        
         awaitingClose = true
     }
     
