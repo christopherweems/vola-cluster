@@ -124,7 +124,8 @@ public final class WebSocketActorSystem:
                 #if os(iOS) || os(macOS) || os(watchOS)
                 return NIOTSEventLoopGroup()
                 #else
-                fatalError()
+                struct UnsupportedPlatformError: Error { }
+                throw UnsupportedPlatformError()
                 #endif
             case .serverOnly:
                 return MultiThreadedEventLoopGroup(numberOfThreads: 1)

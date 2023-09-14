@@ -24,6 +24,7 @@ import NIOFoundationCompat
 @available(watchOS 9.0, *)
 extension WebSocketActorSystem {
     internal func startClient(host: String, port: Int) throws -> Channel {
+        #if os(iOS) || os(macOS) || os(watchOS)
         let bootstrap = NIOTSConnectionBootstrap(group: group)
             // Enable SO_REUSEADDR.
             .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
@@ -54,6 +55,12 @@ extension WebSocketActorSystem {
         let channel = try bootstrap.connect(host: host, port: port).wait()
         
         return channel
+        
+        #else
+        struct UnsupportedPlatformError: Error { }
+        throw UnsupportedPlatformError()
+        
+        #endif
     }
     
 }

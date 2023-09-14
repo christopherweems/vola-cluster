@@ -9,7 +9,7 @@ import Distributed
 import Foundation
 import NIO
 import NIOConcurrencyHelpers
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || os(watchOS)
 import NIOTransportServices
 #endif
 import NIOCore
@@ -22,6 +22,7 @@ import NIOFoundationCompat
 
 extension WebSocketActorSystem {
     internal func startServer(host: String, port: Int) throws -> any Channel {
+        #if os(iOS) || os(macOS) || os(watchOS)
         // Upgrader performs upgrade from HTTP to WS connection
         let upgrader = NIOWebSocketServerUpgrader(
             shouldUpgrade: { (channel: any Channel, head: HTTPRequestHead) in
@@ -65,6 +66,12 @@ extension WebSocketActorSystem {
         }
         
         return channel
+        
+        #else
+        struct UnsupportedPlatformError: Error { }
+        throw UnsupportedPlatformError()
+        
+        #endif
     }
     
 }

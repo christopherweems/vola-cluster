@@ -9,7 +9,7 @@ import Distributed
 import Foundation
 import NIO
 import NIOConcurrencyHelpers
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || os(watchOS)
 import NIOTransportServices
 #endif
 import NIOCore
