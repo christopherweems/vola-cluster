@@ -118,19 +118,30 @@ public final class WebSocketActorSystem:
         // and as such will be always using NetworkFramework (via NIOTransportServices),
         // for the client-side. This does not have to always be the case, but generalizing/making
         // it configurable is left as an exercise for interested developers.
+        
+        #if os(iOS) || os(macOS) || os(watchOS)
         self.group = { () -> EventLoopGroup in
             switch mode {
             case .clientFor:
-                #if os(iOS) || os(macOS) || os(watchOS)
                 return NIOTSEventLoopGroup()
-                #else
-                struct UnsupportedPlatformError: Error { }
-                throw UnsupportedPlatformError()
-                #endif
             case .serverOnly:
                 return MultiThreadedEventLoopGroup(numberOfThreads: 1)
             }
         }()
+        
+        #else
+        self.group = try { () -> EventLoopGroup in
+            switch mode {
+            case .clientFor:
+                struct UnsupportedPlatformError: Error { }
+                throw UnsupportedPlatformError()
+                
+            case .serverOnly:
+                return MultiThreadedEventLoopGroup(numberOfThreads: 1)
+            }
+        }()
+        
+        #endif
         
         // Start networking
         switch mode {
