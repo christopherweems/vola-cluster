@@ -58,18 +58,18 @@ public struct VolaCluster {
     public init(currentDevice: WellKnownDevice, role: InstanceRole) {
         self.currentDevice = currentDevice
         self.role = role
-
+        
         #if DEBUG
         #if BUILD_LIL_BISH_SERVER
         productServer = (.lilBish, .productServer)
         #else
         productServer = (.lilBook, .productServer)
         #endif
-
+        
         #elseif !DEBUG
         productServer = (.doc, .productServer)
         #endif
-
+        
     }
 
 }
