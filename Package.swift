@@ -1,6 +1,26 @@
 // swift-tools-version: 5.9
 import PackageDescription
 
+extension [SwiftSetting] {
+    static let inProgress: [SwiftSetting] = [
+        
+    ]
+    
+    static let prereleaseTools: [SwiftSetting] = [
+        .enableExperimentalFeature("AccessLevelOnImport"),
+        
+    ]
+    
+    static let featureFlags: [SwiftSetting] = [
+        .define("BUILD_LIL_BISH_SERVER"),
+        
+    ]
+    
+    static let volaCluster = inProgress + prereleaseTools + featureFlags
+    static let volaClusterTests = Self.volaCluster
+    
+}
+
 let package = Package(
     name: "vola-cluster",
     platforms: [
@@ -33,7 +53,8 @@ let package = Package(
                 .product(name: "DistributedCluster", package: "swift-distributed-actors"),
                 .product(name: "ServiceDiscovery", package: "swift-service-discovery"),
                 
-            ]
+            ],
+            swiftSettings: .volaCluster
         ),
         
         .testTarget(
@@ -45,7 +66,9 @@ let package = Package(
                 .product(name: "NIOWebSocket", package: "swift-nio"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
                 
-            ]),
+            ],
+            swiftSettings: .volaClusterTests
+        ),
         
     ]
 )
