@@ -12,7 +12,7 @@ extension [SwiftSetting] {
     ]
     
     static let featureFlags: [SwiftSetting] = [
-        .define("BUILD_LIL_BISH_SERVER"),
+//        .define("BUILD_LIL_BISH_SERVER"),
         
     ]
     
