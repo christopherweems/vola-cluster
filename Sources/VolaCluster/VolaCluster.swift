@@ -14,6 +14,7 @@ public struct VolaCluster {
         
         // production
         case doc = "100.103.224.86"
+        case docMcFly = "100.81.142.40"
         
     }
 
@@ -22,7 +23,9 @@ public struct VolaCluster {
         case inventoryServer
         case productClient
         case inventoryClient
-
+        
+        case tentpole
+        
     }
 
     public enum Port: Int, CaseIterable {
@@ -54,7 +57,12 @@ public struct VolaCluster {
         }
 
     }
-
+    
+    public func waitForAllPeers() async throws {
+        let clusterSystem = await ClusterSystem(self)
+        try await clusterSystem.terminated
+    }
+    
     public init(currentDevice: WellKnownDevice, role: InstanceRole) {
         self.currentDevice = currentDevice
         self.role = role
