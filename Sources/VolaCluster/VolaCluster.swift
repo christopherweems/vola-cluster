@@ -92,26 +92,7 @@ extension VolaCluster {
         let (device, port) = self[keyPath: endpointKeyPath]
         return .init(host: device.rawValue, port: port.rawValue)
     }
-
-    public func endpoint(forConnectingTo endpointKeyPath: KeyPath<VolaCluster, (device: WellKnownDevice, port: Port)>) -> Cluster.Endpoint {
-        let port: Port
-
-        switch(currentDevice, role, endpointKeyPath) {
-        case (_, .inventoryServer, \.productServer),
-            (_, .inventoryClient, \.productServer):
-            port = .productServerInventoryServerClient
-
-        case (_, .productClient, \.productServer):
-            port = .productServerMobileClient
-
-        default:
-            fatalError()
-        }
-
-
-        return .init(host: currentDevice.rawValue, port: port.rawValue)
-    }
-
+    
 }
 
 
