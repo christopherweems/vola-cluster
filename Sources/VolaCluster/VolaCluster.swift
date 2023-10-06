@@ -39,26 +39,17 @@ public struct VolaCluster {
     public let name = "lol.vola.squiggly"
     
     private let role: InstanceRole
-
-    public let productServer: (device: WellKnownDevice, port: Port)
-
+    
     public let tentpoleServer: (device: WellKnownDevice, port: Port) = (.docMcFly, .tentpoleServer)
     
     private let currentDevice: WellKnownDevice
 
     public func connectToPeers(on clusterSystem: ClusterSystem) async throws {
-        // connect to the peers this node depends on base on its role
-        switch role {
-        case .inventoryServer, .inventoryClient, .productClient:
-            let productServerEndpoint = self.endpoint(for: \.productServer)
-
-            clusterSystem.cluster.join(endpoint: productServerEndpoint)
-            try await clusterSystem.cluster.joined(endpoint: productServerEndpoint, within: .seconds(8))
-
-        default:
-            break
-        }
-
+        guard role != .tentpole else { return }
+        
+        try await clusterSystem.cluster.joined(
+            endpoint: self.endpoint(for: \.tentpoleServer),
+            within: .seconds(8))
     }
     
     @_spi(MayoInternal)
@@ -70,17 +61,6 @@ public struct VolaCluster {
     public init(currentDevice: WellKnownDevice, role: InstanceRole) {
         self.currentDevice = currentDevice
         self.role = role
-        
-        #if DEBUG
-        #if BUILD_LIL_BISH_SERVER
-        productServer = (.lilBish, .productServer)
-        #else
-        productServer = (.lilBook, .productServer)
-        #endif
-        
-        #elseif !DEBUG
-        productServer = (.doc, .productServer)
-        #endif
         
     }
 
