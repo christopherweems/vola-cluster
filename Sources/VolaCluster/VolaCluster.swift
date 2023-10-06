@@ -29,6 +29,7 @@ public struct VolaCluster {
     }
 
     public enum Port: Int, CaseIterable {
+        case tentpoleServer = 9100
         case productServer = 9101
         case productServerInventoryServerClient = 9102 // inventory server is the client
         case productServerMobileClient = 9103
@@ -41,6 +42,8 @@ public struct VolaCluster {
 
     public let productServer: (device: WellKnownDevice, port: Port)
 
+    public let tentpoleServer: (device: WellKnownDevice, port: Port) = (.docMcFly, .tentpoleServer)
+    
     private let currentDevice: WellKnownDevice
 
     public func connectToPeers(on clusterSystem: ClusterSystem) async throws {
