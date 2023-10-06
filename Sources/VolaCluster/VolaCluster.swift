@@ -58,6 +58,7 @@ public struct VolaCluster {
 
     }
     
+    @_spi(MayoInternal)
     public func waitForAllPeers() async throws {
         let clusterSystem = await ClusterSystem(self)
         try await clusterSystem.terminated
