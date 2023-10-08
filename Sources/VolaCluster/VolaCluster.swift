@@ -44,12 +44,12 @@ public struct VolaCluster {
     
     private let currentDevice: WellKnownDevice
 
-    public func connectToPeers(on clusterSystem: ClusterSystem) async throws {
+    public func connectToPeers(on clusterSystem: ClusterSystem, within: Duration = .seconds(8)) async throws {
         guard role != .tentpole else { return }
         
         try await clusterSystem.cluster.joined(
             endpoint: self.endpoint(for: \.tentpoleServer),
-            within: .seconds(8))
+            within: within)
     }
     
     @_spi(MayoInternal)
