@@ -102,7 +102,10 @@ extension ClusterSystem {
         _ cluster: VolaCluster,
         configuredWith configureSettings: (inout ClusterSystemSettings) -> Void = { _ in () }
     ) async {
-        await self.init(cluster.name, configuredWith: configureSettings)
+        await self.init(cluster.name) { settings in
+            settings.endpoint = cluster.currentDeviceEndpoint
+            configureSettings(&settings)
+        }
     }
 
 }
