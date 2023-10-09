@@ -17,7 +17,7 @@ public struct VolaCluster {
         case docMcFly = "100.81.142.40"
         
     }
-
+    
     public enum InstanceRole {
         case productServer
         case inventoryServer
@@ -27,7 +27,7 @@ public struct VolaCluster {
         case tentpole
         
     }
-
+    
     public enum Port: Int, CaseIterable {
         case tentpoleServer = 9100
         case productServer = 9101
@@ -43,7 +43,7 @@ public struct VolaCluster {
     public let tentpoleServer: (device: WellKnownDevice, port: Port) = (.docMcFly, .tentpoleServer)
     
     private let currentDevice: WellKnownDevice
-
+    
     public func connectToPeers(on clusterSystem: ClusterSystem, within: Duration = .seconds(8)) async throws {
         guard role != .tentpole else { return }
         
@@ -63,7 +63,7 @@ public struct VolaCluster {
         self.role = role
         
     }
-
+    
 }
 
 
@@ -107,5 +107,5 @@ extension ClusterSystem {
             configureSettings(&settings)
         }
     }
-
+    
 }
